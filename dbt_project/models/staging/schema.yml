@@ -1,0 +1,46 @@
+version: 2
+
+sources:
+  - name: raw
+    database: STREAMING_DB
+    schema: RAW
+    tables:
+      - name: tmdb_movies
+        description: "Raw TMDb movie data fetched by Airflow DAG"
+        columns:
+          - name: movie_id
+            tests: [not_null]
+          - name: title
+            tests: [not_null]
+          - name: vote_average
+            tests: [not_null]
+      - name: genres
+        description: "TMDb genre reference (19 genres)"
+        columns:
+          - name: genre_id
+            tests: [unique, not_null]
+
+models:
+  - name: stg_movies
+    description: "Cleaned, typed movie records with popularity/rating tiers"
+    columns:
+      - name: movie_id
+        tests: [unique, not_null]
+      - name: title
+        tests: [not_null]
+      - name: popularity_tier
+        tests:
+          - accepted_values:
+              values: ['Blockbuster', 'Popular', 'Mainstream', 'Niche']
+      - name: rating_tier
+        tests:
+          - accepted_values:
+              values: ['Exceptional', 'Good', 'Average', 'Below Average', 'Poor']
+
+  - name: stg_genres
+    description: "Genre reference"
+    columns:
+      - name: genre_id
+        tests: [unique, not_null]
+      - name: genre_name
+        tests: [not_null]
